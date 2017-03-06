@@ -118,8 +118,24 @@ describe('modelBase', function () {
       })
     })
 
-    it('should not validate when  Model.validate is not present', function () {
+    it('should not validate when Model.validate is not present', function () {
       var Model = ModelBase.extend({ tableName: 'test_table' })
+      return Model.forge({ id: 1 })
+      .save('first_name', 'notYoName')
+      .then(function (model) {
+        return expect(model.get('first_name')).to.equal('notYoName')
+      })
+    })
+
+    it('should not validate when Model.skipValidate is truthy', function () {
+      var Model = ModelBase.extend({
+        tableName: 'test_table',
+        validate: Joi.object().keys({
+          first_name: Joi.string().valid('hello', 'goodbye'),
+          last_name: Joi.string().default('world')
+        }),
+        skipValidate: true
+      })
       return Model.forge({ id: 1 })
       .save('first_name', 'notYoName')
       .then(function (model) {
